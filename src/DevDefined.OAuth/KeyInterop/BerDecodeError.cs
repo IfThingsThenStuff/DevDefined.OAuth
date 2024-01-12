@@ -26,6 +26,7 @@
 
 using System;
 using System.Runtime.Serialization;
+using System.Security;
 using System.Security.Permissions;
 using System.Text;
 
@@ -86,8 +87,8 @@ namespace DevDefined.OAuth.KeyInterop
 			}
 		}
 
-		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-		public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        [SecurityCritical]
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
 			base.GetObjectData(info, context);
 			info.AddValue("Position", m_position);

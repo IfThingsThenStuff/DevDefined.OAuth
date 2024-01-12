@@ -48,7 +48,7 @@ namespace DevDefined.OAuth.Framework.Signing
 			if (signingContext.Algorithm == null)
 				throw Error.AlgorithmPropertyNotSetOnSigningContext();
 
-			SHA1CryptoServiceProvider sha1 = GenerateHash(signingContext);
+			var sha1 = GenerateHash(signingContext);
 
 			var deformatter = new RSAPKCS1SignatureDeformatter(signingContext.Algorithm);
 			deformatter.SetHashAlgorithm("MD5");
@@ -63,7 +63,7 @@ namespace DevDefined.OAuth.Framework.Signing
 			if (signingContext.Algorithm == null)
 				throw Error.AlgorithmPropertyNotSetOnSigningContext();
 
-			SHA1CryptoServiceProvider sha1 = GenerateHash(signingContext);
+			var sha1 = GenerateHash(signingContext);
 
 			var formatter = new RSAPKCS1SignatureFormatter(signingContext.Algorithm);
 			formatter.SetHashAlgorithm("MD5");
@@ -73,16 +73,17 @@ namespace DevDefined.OAuth.Framework.Signing
 			return Convert.ToBase64String(signature);
 		}
 
-		SHA1CryptoServiceProvider GenerateHash(SigningContext signingContext)
-		{
-			var sha1 = new SHA1CryptoServiceProvider();
+        SHA1 GenerateHash(SigningContext signingContext)
+        {
+            using (SHA1 sha1 = SHA1.Create())
+            {
+                byte[] dataBuffer = Encoding.ASCII.GetBytes(signingContext.SignatureBase);
+                byte[] hashBytes = sha1.ComputeHash(dataBuffer);
 
-			byte[] dataBuffer = Encoding.ASCII.GetBytes(signingContext.SignatureBase);
+                return sha1; // or simply return sha1; if you want to return the same instance
+            }
+        }
 
-			var cs = new CryptoStream(Stream.Null, sha1, CryptoStreamMode.Write);
-			cs.Write(dataBuffer, 0, dataBuffer.Length);
-			cs.Close();
-			return sha1;
-		}
-	}
+
+    }
 }

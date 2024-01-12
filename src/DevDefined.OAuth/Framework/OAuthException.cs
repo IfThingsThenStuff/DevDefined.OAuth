@@ -53,9 +53,9 @@ namespace DevDefined.OAuth.Framework
 			Report = new OAuthProblemReport {Problem = problem, ProblemAdvice = advice};
 		}
 
-		public OAuthException(SerializationInfo info, StreamingContext context) : base(info, context)
-		{
-		}
+		//public OAuthException(SerializationInfo info, StreamingContext context) : base(info, context)
+		//{
+		//}
 
 		public OAuthProblemReport Report { get; set; }
 		public IOAuthContext Context { get; set; }

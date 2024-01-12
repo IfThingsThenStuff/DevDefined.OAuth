@@ -57,7 +57,7 @@ namespace DevDefined.OAuth.Testing
 
 		public AsymmetricAlgorithm GetConsumerPublicKey(IConsumer consumer)
 		{
-			return TestCertificates.OAuthTestCertificate().PublicKey.Key;
+			return TestCertificates.OAuthTestCertificate().GetRSAPublicKey();
 		}
 	}
 }

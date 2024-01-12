@@ -26,6 +26,7 @@
 
 using System.IO;
 using System.Net;
+using System.Net.Http;
 
 namespace DevDefined.OAuth.Utility
 {
@@ -51,5 +52,14 @@ namespace DevDefined.OAuth.Utility
 		{
 			return response.GetResponseStream().ReadToEnd();
 		}
-	}
+
+        public static string ReadToEnd(this HttpResponseMessage response)
+        {
+            using (var streamReader = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+            {
+                return streamReader.ReadToEndAsync().Result;
+            }
+        }
+        
+    }
 }

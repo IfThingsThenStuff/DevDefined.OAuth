@@ -43,7 +43,7 @@ namespace DevDefined.OAuth.Tests.Consumer
 
 			RequestDescription description = session.BuildRequestTokenContext("POST").GetRequestDescription();
 
-			Assert.True(description.Body.Contains("oauth_callback=http%3A%2F%2Flocalhost%2Fcallback"));
+			Assert.Contains("oauth_callback=http%3A%2F%2Flocalhost%2Fcallback", description.Body);
 		}
 
 		[Fact]
@@ -55,8 +55,8 @@ namespace DevDefined.OAuth.Tests.Consumer
 
 			RequestDescription description = session.BuildRequestTokenContext("POST").GetRequestDescription();
 
-			Assert.True(description.Body.Contains("oauth_callback=oob"));
-		}
+            Assert.Contains("oauth_callback=oob", description.Body);
+        }
 
 		[Fact]
 		public void GetRequestTokenForMethodGetDoesNotPopulateBody()
@@ -108,7 +108,7 @@ namespace DevDefined.OAuth.Tests.Consumer
 				.SignWithToken()
 				.GetRequestDescription();
 
-			Assert.False(description.Headers["Authorization"].Contains(Parameters.OAuth_Token_Secret));
+			Assert.DoesNotContain(Parameters.OAuth_Token_Secret, description.Headers["Authorization"]);
 		}
 
 		[Fact]
@@ -126,8 +126,9 @@ namespace DevDefined.OAuth.Tests.Consumer
 				.SignWithToken()
 				.GetRequestDescription();
 
-			Assert.False(description.Body.Contains(Parameters.OAuth_Token_Secret));
-		}
+			Assert.DoesNotContain(Parameters.OAuth_Token_Secret, description.Body);
+
+        }
 
 		[Fact]
 		public void TokenSecretNotIncludedInQueryParametersForGetRequest()
@@ -144,8 +145,8 @@ namespace DevDefined.OAuth.Tests.Consumer
 				.SignWithToken()
 				.GetRequestDescription();
 
-			Assert.False(description.Url.ToString().Contains(Parameters.OAuth_Token_Secret));
-		}
+			Assert.DoesNotContain(Parameters.OAuth_Token_Secret, description.Url.ToString());
+        }
 
 		[Fact]
 		public void generate_request_with_raw_body_includes_body_hash()

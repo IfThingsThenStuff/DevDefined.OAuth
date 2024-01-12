@@ -2,8 +2,8 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 {
   using DevDefined.OAuth.Framework;
   using DevDefined.OAuth.Provider.Inspectors;
-
-  using Xunit;
+    using DevDefined.OAuth.Tests.Utility;
+    using Xunit;
 
   public class XAuthValidationInspectorTests
   {
@@ -73,7 +73,7 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
       var context = new OAuthContext { XAuthMode = "client_auth", XAuthUsername = "username", XAuthPassword = "password" };
 
       var inspector = new XAuthValidationInspector(ValidateXAuthMode, this.AuthenticateXAuthUsernameAndPassword);
-      Assert.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.CreateAccessToken, context));
+      AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.CreateAccessToken, context));
     }
   }
 }

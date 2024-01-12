@@ -26,7 +26,7 @@
 
 using DevDefined.OAuth.Framework;
 using DevDefined.OAuth.Provider.Inspectors;
-using System;
+using DevDefined.OAuth.Tests.Utility;
 using Xunit;
 
 namespace DevDefined.OAuth.Tests.Provider.Inspectors
@@ -45,18 +45,10 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 			              		BodyHash = "wrong",
 			              		SignatureMethod = SignatureMethod.PlainText
 			              	};
+            AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
+		}
 
-            var ex = Record.Exception(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
-            Assert.Null(ex);
-
-        }
-
-        private void action()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Fact]
+		[Fact]
 		public void inspect_body_for_hmac_sha1_signature_throws_when_hash_does_not_match()
 		{
 			var context = new OAuthContext
@@ -66,10 +58,9 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 			              		SignatureMethod = SignatureMethod.HmacSha1
 			              	};
 
-            var ex = Record.Exception(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
+			var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
 
-            Assert.Null(ex);
-            Assert.Equal("Failed to validate body hash", ex.Message);
+			Assert.Equal("Failed to validate body hash", ex.Message);
 		}
 
 		[Fact]
@@ -82,9 +73,8 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 			              		SignatureMethod = SignatureMethod.HmacSha1
 			              	};
 
-            var ex = Record.Exception(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
-            Assert.Null(ex);
-        }
+			AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
+		}
 
 		[Fact]
 		public void inspect_body_for_hmac_sha1_signature_does_not_throw_when_body_hash_is_null()
@@ -96,9 +86,8 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 			              		SignatureMethod = SignatureMethod.HmacSha1
 			              	};
 
-            var ex = Record.Exception(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
-            Assert.Null(ex);
-        }
+			AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
+		}
 
 		[Fact]
 		public void inspect_when_context_has_form_parameters_throws()

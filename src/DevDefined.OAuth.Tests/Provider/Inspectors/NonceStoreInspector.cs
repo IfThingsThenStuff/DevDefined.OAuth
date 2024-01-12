@@ -27,6 +27,7 @@
 using DevDefined.OAuth.Framework;
 using DevDefined.OAuth.Provider.Inspectors;
 using DevDefined.OAuth.Storage;
+using DevDefined.OAuth.Tests.Utility;
 using Rhino.Mocks;
 using Xunit;
 
@@ -61,7 +62,10 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 
 			var inspector = new NonceStoreInspector(nonceStore);
 
-			Assert.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
-		}
+			AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
+
+            var ex = Record.Exception(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
+            Assert.Null(ex);
+        }
 	}
 }

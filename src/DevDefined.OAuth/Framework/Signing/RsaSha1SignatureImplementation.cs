@@ -25,63 +25,63 @@
 #endregion
 
 using System;
-using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace DevDefined.OAuth.Framework.Signing
 {
-	public class RsaSha1SignatureImplementation : IContextSignatureImplementation
-	{
-		public string MethodName
-		{
-			get { return SignatureMethod.RsaSha1; }
-		}
+    public class RsaSha1SignatureImplementation : IContextSignatureImplementation
+    {
+        public string MethodName
+        {
+            get { return SignatureMethod.RsaSha1; }
+        }
 
-		public void SignContext(IOAuthContext authContext, SigningContext signingContext)
-		{
-			authContext.Signature = GenerateSignature(authContext, signingContext);
-		}
+        public void SignContext(IOAuthContext authContext, SigningContext signingContext)
+        {
+            authContext.Signature = GenerateSignature(authContext, signingContext);
+        }
 
-		public bool ValidateSignature(IOAuthContext authContext, SigningContext signingContext)
-		{
-			if (signingContext.Algorithm == null)
-				throw Error.AlgorithmPropertyNotSetOnSigningContext();
+        public bool ValidateSignature(IOAuthContext authContext, SigningContext signingContext)
+        {
+            if (signingContext.Algorithm == null)
+                throw Error.AlgorithmPropertyNotSetOnSigningContext();
 
-			var sha1 = GenerateHash(signingContext);
+            using (var sha1 = GenerateHash(signingContext))
+            {
+                var deformatter = new RSAPKCS1SignatureDeformatter(signingContext.Algorithm);
+                deformatter.SetHashAlgorithm("MD5");
 
-			var deformatter = new RSAPKCS1SignatureDeformatter(signingContext.Algorithm);
-			deformatter.SetHashAlgorithm("MD5");
+                byte[] signature = Convert.FromBase64String(authContext.Signature);
 
-			byte[] signature = Convert.FromBase64String(authContext.Signature);
+                return deformatter.VerifySignature(sha1, signature);
+            }
+        }
 
-			return deformatter.VerifySignature(sha1, signature);
-		}
+        string GenerateSignature(IOAuthContext authContext, SigningContext signingContext)
+        {
+            if (signingContext.Algorithm == null)
+                throw Error.AlgorithmPropertyNotSetOnSigningContext();
 
-		string GenerateSignature(IOAuthContext authContext, SigningContext signingContext)
-		{
-			if (signingContext.Algorithm == null)
-				throw Error.AlgorithmPropertyNotSetOnSigningContext();
+            using (var sha1 = GenerateHash(signingContext))
+            {
+                var formatter = new RSAPKCS1SignatureFormatter(signingContext.Algorithm);
+                formatter.SetHashAlgorithm("MD5");
 
-			var sha1 = GenerateHash(signingContext);
+                byte[] signature = formatter.CreateSignature(sha1);
 
-			var formatter = new RSAPKCS1SignatureFormatter(signingContext.Algorithm);
-			formatter.SetHashAlgorithm("MD5");
+                return Convert.ToBase64String(signature);
+            }
 
-			byte[] signature = formatter.CreateSignature(sha1);
-
-			return Convert.ToBase64String(signature);
-		}
+        }
 
         SHA1 GenerateHash(SigningContext signingContext)
         {
-            using (SHA1 sha1 = SHA1.Create())
-            {
-                byte[] dataBuffer = Encoding.ASCII.GetBytes(signingContext.SignatureBase);
-                byte[] hashBytes = sha1.ComputeHash(dataBuffer);
+            SHA1 sha1 = SHA1.Create();
+            byte[] dataBuffer = Encoding.ASCII.GetBytes(signingContext.SignatureBase);
+            byte[] hashBytes = sha1.ComputeHash(dataBuffer);
 
-                return sha1; // or simply return sha1; if you want to return the same instance
-            }
+            return sha1; // or simply return sha1; if you want to return the same instance
         }
 
 

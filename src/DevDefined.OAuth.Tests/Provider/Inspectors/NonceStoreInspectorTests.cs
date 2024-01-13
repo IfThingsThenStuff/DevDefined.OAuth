@@ -28,39 +28,40 @@ using DevDefined.OAuth.Framework;
 using DevDefined.OAuth.Provider.Inspectors;
 using DevDefined.OAuth.Storage;
 using DevDefined.OAuth.Tests.Utility;
-using Rhino.Mocks;
+using Moq;
 using Xunit;
 
 namespace DevDefined.OAuth.Tests.Provider.Inspectors
 {
 	public class NonceStoreInspectorTests
 	{
-		[Fact]
-		public void InspectContextForRepeatedNonceThrows()
-		{
-			var nonceStore = MockRepository.GenerateStub<INonceStore>();
+        [Fact]
+        public void InspectContextForRepeatedNonceThrows()
+        {
+            var nonceStore = new Mock<INonceStore>();
 
-			var context = new OAuthContext {Nonce = "1"};
+            var context = new OAuthContext { Nonce = "1" };
 
-			nonceStore.Stub(stub => stub.RecordNonceAndCheckIsUnique(context, "1")).Return(false);
+            nonceStore.Setup(stub => stub.RecordNonceAndCheckIsUnique(context, "1")).Returns(false);
 
-			var inspector = new NonceStoreInspector(nonceStore);
+            var inspector = new NonceStoreInspector(nonceStore.Object);
 
-			var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
+            var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
 
-			Assert.Equal("The nonce value \"1\" has already been used", ex.Message);
-		}
+            Assert.Equal("The nonce value \"1\" has already been used", ex.Message);
+        }
+
 
 		[Fact]
 		public void InspectContextForUniqueNoncePasses()
 		{
-			var nonceStore = MockRepository.GenerateStub<INonceStore>();
+            var nonceStore = new Mock<INonceStore>();
 
-			var context = new OAuthContext {Nonce = "2"};
+            var context = new OAuthContext {Nonce = "2"};
 
-			nonceStore.Stub(stub => stub.RecordNonceAndCheckIsUnique(context, "2")).Return(true);
+            nonceStore.Setup(stub => stub.RecordNonceAndCheckIsUnique(context, "2")).Returns(true);
 
-			var inspector = new NonceStoreInspector(nonceStore);
+			var inspector = new NonceStoreInspector(nonceStore.Object);
 
 			AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
 

@@ -27,46 +27,47 @@
 using DevDefined.OAuth.Framework;
 using DevDefined.OAuth.Provider.Inspectors;
 using DevDefined.OAuth.Storage;
-using Rhino.Mocks;
+using Moq;
 using Xunit;
 
 namespace DevDefined.OAuth.Tests.Provider.Inspectors
 {
-	public class ConsumerValidationInspector
+	public class ConsumerValidationInspectorTests
 	{
 		[Fact]
 		public void InValidConsumerThrows()
 		{
-			var consumerStore = MockRepository.GenerateStub<IConsumerStore>();
+			var consumerStore = new Mock<IConsumerStore>();
 
 			var context = new OAuthContext {ConsumerKey = "key"};
 
-			consumerStore.Stub(stub => stub.IsConsumer(context)).Return(false);
+			consumerStore.Setup(stub => stub.IsConsumer(context)).Returns(false);
 
-			var inspector = new OAuth.Provider.Inspectors.ConsumerValidationInspector(consumerStore);
+			var inspector = new ConsumerValidationInspector(consumerStore.Object);
 
 			var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
 
 			Assert.Equal("Unknown Consumer (Realm: , Key: key)", ex.Message);
 		}
 
-		[Fact]
-		public void ValidConsumerPassesThrough()
-		{
-			var repository = new MockRepository();
+        [Fact]
+        public void ValidConsumerPassesThrough()
+        {
+            // Arrange
+            var consumerStore = new Mock<IConsumerStore>();
+            var context = new OAuthContext { ConsumerKey = "key" };
 
-			var consumerStore = repository.StrictMock<IConsumerStore>();
-			var context = new OAuthContext {ConsumerKey = "key"};
+            // Set up expectation for the IsConsumer method
+            consumerStore.Setup(cs => cs.IsConsumer(context)).Returns(true);
 
-			using (repository.Record())
-			{
-				Expect.Call(consumerStore.IsConsumer(context)).Return(true);
-			}
-			using (repository.Playback())
-			{
-				var inspector = new OAuth.Provider.Inspectors.ConsumerValidationInspector(consumerStore);
-				inspector.InspectContext(ProviderPhase.GrantRequestToken, context);
-			}
-		}
-	}
+            // Act
+            var inspector = new OAuth.Provider.Inspectors.ConsumerValidationInspector(consumerStore.Object);
+            inspector.InspectContext(ProviderPhase.GrantRequestToken, context);
+
+            // Assert
+            // Add assertions here based on the expected behavior of the test
+            consumerStore.Verify(cs => cs.IsConsumer(context), Times.Once);
+            // Add more assertions as needed
+        }
+    }
 }

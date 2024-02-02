@@ -62,12 +62,6 @@ namespace DevDefined.OAuth.KeyInterop
 			m_position = position;
 		}
 
-		BerDecodeException(SerializationInfo info, StreamingContext context)
-			: base(info, context)
-		{
-			m_position = info.GetInt32("Position");
-		}
-
 		public int Position
 		{
 			get { return m_position; }
@@ -86,7 +80,7 @@ namespace DevDefined.OAuth.KeyInterop
 			}
 		}
 
-		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        [Obsolete]
 		public override void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
 			base.GetObjectData(info, context);

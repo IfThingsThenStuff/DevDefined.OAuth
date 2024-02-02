@@ -34,23 +34,44 @@ namespace DevDefined.OAuth.Framework
 {
 	public static class CertificateUtility
 	{
-		/// <summary>
-		/// Loads a certificate given both it's private and public keys - generally used to 
-		/// load keys provided on the OAuth wiki's for verification of implementation correctness.
-		/// </summary>
-		/// <param name="privateKey"></param>
-		/// <param name="certificate"></param>
-		/// <returns></returns>
-		public static X509Certificate2 LoadCertificateFromStrings(string privateKey, string certificate)
-		{
-			var parser = new AsnKeyParser(Convert.FromBase64String(privateKey));
-			RSAParameters parameters = parser.ParseRSAPrivateKey();
-			var x509 = new X509Certificate2(Encoding.ASCII.GetBytes(certificate));
-			var provider = new RSACryptoServiceProvider();
-			provider.ImportParameters(parameters);
-			x509.PrivateKey = provider;
+        /// <summary>
+        /// Loads a certificate given both it's private and public keys - generally used to 
+        /// load keys provided on the OAuth wiki's for verification of implementation correctness.
+        /// </summary>
+        /// <param name="privateKey"></param>
+        /// <param name="certificate"></param>
+        /// <returns></returns>
+        public static X509Certificate2 LoadCertificateFromStrings(string privateKey, string certificate)
+        {
+            byte[] privateKeyBytes = Convert.FromBase64String(privateKey);
+            RSAParameters parameters = ParseRSAPrivateKey(privateKeyBytes);
 
-			return x509;
-		}
-	}
+            X509Certificate2 x509Certificate = new X509Certificate2(Encoding.ASCII.GetBytes(certificate));
+
+            using (RSA rsa = RSA.Create())
+            {
+                rsa.ImportParameters(parameters);
+                RSA privateKeyRsa = x509Certificate.GetRSAPrivateKey() ?? rsa;
+
+                X509Certificate2 certificateWithPrivateKey = x509Certificate.CopyWithPrivateKey(privateKeyRsa);
+
+                // Optional: If you want to export it for use in other scenarios
+                byte[] exportedCertWithPrivateKey = certificateWithPrivateKey.Export(X509ContentType.Pkcs12, (string)null);
+
+                return new X509Certificate2(exportedCertWithPrivateKey, (string)null, X509KeyStorageFlags.MachineKeySet);
+            }
+        }
+
+        private static RSAParameters ParseRSAPrivateKey(byte[] privateKeyBytes)
+        {
+            // Implement the parsing logic for the RSA private key here
+            // This is a basic example, and you may need to adjust it based on the actual format of your private key
+
+            // Assuming DER encoding (ASN.1 format)
+            // Note: This is a basic example, and may need adjustments based on the actual private key format
+
+            var keyParser = new AsnKeyParser(privateKeyBytes);
+            return keyParser.ParseRSAPrivateKey();
+        }
+    }
 }

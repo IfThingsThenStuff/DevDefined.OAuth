@@ -24,7 +24,9 @@
 
 #endregion
 
+using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using DevDefined.OAuth.Framework;
 
@@ -47,23 +49,43 @@ namespace DevDefined.OAuth.Consumer
 			_certificateFactory = certificateFactory;
 		}
 
-		/// <summary>
-		/// Converts the current ConsumerRequest to an HttpWebRequest
-		/// </summary>
-		/// <returns>Return an HttpWebRequest with a client certificate attached.</returns>
-		public override HttpWebRequest ToWebRequest()
-		{
-			HttpWebRequest webReqeust = base.ToWebRequest();
+        /// <summary>
+        /// Converts the current ConsumerRequest to an HttpWebRequest
+        /// </summary>
+        /// <returns>Return an HttpRequestMessage with a client certificate attached.</returns>
+        public override HttpRequestMessage ToWebRequest()
+        {
+            HttpRequestMessage webRequest = base.ToWebRequest();
 
-			X509Certificate2 certificate = _certificateFactory.CreateCertificate();
+            X509Certificate2 certificate = _certificateFactory.CreateCertificate();
 
-			// Attach the certificate to the HttpWebRequest
-			if (certificate != null)
-			{
-				webReqeust.ClientCertificates.Add(certificate);
-			}
+            // Attach the certificate to the HttpRequestMessage
+            if (certificate != null)
+            {
+                var handler = new HttpClientHandler();
+                handler.ClientCertificates.Add(certificate);
 
-			return webReqeust;
-		}
-	}
+                using (var httpClient = new HttpClient(handler))
+                {
+                    // Copy relevant properties from base request to the new HttpRequestMessage
+                    webRequest.Headers.ToList().ForEach(header => httpClient.DefaultRequestHeaders.Add(header.Key, header.Value));
+                    webRequest.Content?.Headers.ToList().ForEach(header => httpClient.DefaultRequestHeaders.Add(header.Key, header.Value));
+
+                    // Perform the request to obtain any additional information
+                    HttpResponseMessage response = httpClient.SendAsync(webRequest).Result;
+                    response.EnsureSuccessStatusCode();
+
+                    // You may need to process the response if needed
+                    var responseBody = response.Content.ReadAsStringAsync().Result;
+                    // Do something with responseBody
+
+                    // Dispose of the HttpClient
+                    httpClient.Dispose();
+                }
+            }
+
+            return webRequest;
+        }
+
+    }
 }

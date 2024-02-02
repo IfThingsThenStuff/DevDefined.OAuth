@@ -27,13 +27,5 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security;
-
-[assembly: AssemblyTitle("DevDefined.OAuth")]
-[assembly: AssemblyDescription("Opensource OAuth Library for .Net")]
-[assembly: AssemblyCompany("DevDefined Limited")]
-[assembly: AssemblyProduct("DevDefined.OAuth")]
-[assembly: AssemblyCopyright("Copyright © DevDefined Limited 2008")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: AllowPartiallyTrustedCallers]

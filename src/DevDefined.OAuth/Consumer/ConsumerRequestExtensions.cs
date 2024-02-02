@@ -28,6 +28,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using DevDefined.OAuth.Framework;
 using DevDefined.OAuth.Utility;
@@ -157,9 +158,9 @@ namespace DevDefined.OAuth.Consumer
 
 		public static string ReadBody(this IConsumerRequest request)
 		{
-			HttpWebResponse response = request.ToWebResponse();
+            HttpResponseMessage response = request.ToWebResponse();
 
-			return response.ReadToEnd();
+            return response.ReadToEnd();
 		}
 
 		public static T Select<T>(this IConsumerRequest request, Func<NameValueCollection, T> selectFunc)

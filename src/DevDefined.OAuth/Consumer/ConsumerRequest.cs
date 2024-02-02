@@ -28,10 +28,11 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
 using DevDefined.OAuth.Framework;
-using DevDefined.OAuth.Utility;
 
 namespace DevDefined.OAuth.Consumer
 {
@@ -40,6 +41,7 @@ namespace DevDefined.OAuth.Consumer
 		readonly IOAuthConsumerContext _consumerContext;
 		readonly IOAuthContext _context;
 		readonly IToken _token;
+		private readonly HttpClient _httpClient;
 
 		public ConsumerRequest(IOAuthContext context, IOAuthConsumerContext consumerContext, IToken token)
 		{
@@ -48,6 +50,7 @@ namespace DevDefined.OAuth.Consumer
 			_context = context;
 			_consumerContext = consumerContext;
 			_token = token;
+			_httpClient = new HttpClient();
 		}
 
 		string ResponseBody { get; set; }
@@ -89,10 +92,10 @@ namespace DevDefined.OAuth.Consumer
 			Uri uri = _context.GenerateUri();
 
 			var description = new RequestDescription
-			                  	{
-			                  		Url = uri,
-			                  		Method = _context.RequestMethod,
-			                  	};
+			{
+				Url = uri,
+				Method = _context.RequestMethod,
+			};
 
 			if ((_context.FormEncodedParameters != null) && (_context.FormEncodedParameters.Count > 0))
 			{
@@ -123,18 +126,26 @@ namespace DevDefined.OAuth.Consumer
 			return description;
 		}
 
-		public HttpWebResponse ToWebResponse()
+		public HttpResponseMessage ToWebResponse()
+		{
+			return ToWebResponseAsync().Result;
+		}
+
+		public async Task<HttpResponseMessage> ToWebResponseAsync()
 		{
 			try
 			{
-				HttpWebRequest request = ToWebRequest();
-				return (HttpWebResponse) request.GetResponse();
+				HttpRequestMessage request = ToWebRequest();
+				using (var httpClient = new HttpClient())
+				{
+					return await httpClient.SendAsync(request);
+				}
 			}
-			catch (WebException webEx)
+			catch (WebException httpEx)
 			{
 				OAuthException authException;
 
-				if (WebExceptionHelper.TryWrapException(Context, webEx, out authException, ResponseBodyAction))
+				if (WebExceptionHelper.TryWrapException(Context, httpEx, out authException, ResponseBodyAction))
 				{
 					throw authException;
 				}
@@ -142,6 +153,7 @@ namespace DevDefined.OAuth.Consumer
 				throw;
 			}
 		}
+
 
 		public NameValueCollection ToBodyParameters()
 		{
@@ -202,75 +214,98 @@ namespace DevDefined.OAuth.Consumer
 
 		public string RequestBody { get; set; }
 
-		public virtual HttpWebRequest ToWebRequest()
+		public virtual HttpRequestMessage ToWebRequest()
 		{
 			RequestDescription description = GetRequestDescription();
 
-			var request = (HttpWebRequest) WebRequest.Create(description.Url);
-			request.Method = description.Method;
-			request.UserAgent = _consumerContext.UserAgent;
-
-			if (Timeout.HasValue)
-				request.Timeout = Timeout.Value;
-
-			if (!string.IsNullOrEmpty(AcceptsType))
+			using (var httpClient = GetHttpClient())
 			{
-				request.Accept = AcceptsType;
-			}
-
-			try
-			{
-				if (Context.Headers["If-Modified-Since"] != null)
+				var request = new HttpRequestMessage
 				{
-					string modifiedDateString = Context.Headers["If-Modified-Since"];
-					request.IfModifiedSince = DateTime.Parse(modifiedDateString);
+					RequestUri = description.Url,
+					Method = new HttpMethod(description.Method)
+				};
+
+				request.Headers.Add("User-Agent", _consumerContext.UserAgent);
+
+				if (Timeout.HasValue)
+				{
+					_httpClient.Timeout = TimeSpan.FromMilliseconds(Timeout.Value);
 				}
+
+				if (!string.IsNullOrEmpty(AcceptsType))
+				{
+					request.Headers.Accept.ParseAdd(AcceptsType);
+				}
+
+				try
+				{
+					var modifiedDateString = Context.Headers.Get("If-Modified-Since");
+					if (modifiedDateString != null)
+
+					{
+						request.Headers.IfModifiedSince = DateTimeOffset.Parse(modifiedDateString);
+					}
+				}
+				catch (Exception ex)
+				{
+					throw new ApplicationException("If-Modified-Since header could not be parsed as a datetime", ex);
+				}
+
+				if (description.Headers.Count > 0)
+				{
+					foreach (var header in description.Headers.AllKeys)
+					{
+						request.Headers.Add(header, description.Headers[header]);
+					}
+				}
+
+				if (!string.IsNullOrEmpty(description.Body))
+				{
+					request.Content = new StringContent(description.Body);
+					request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(description.ContentType);
+				}
+				else if (description.RawBody != null && description.RawBody.Length > 0)
+				{
+					request.Content = new ByteArrayContent(description.RawBody);
+					request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(description.ContentType);
+				}
+
+				return request;
 			}
-			catch (Exception ex)
-			{
-				throw new ApplicationException("If-Modified-Since header could not be parsed as a datetime", ex);
-			}
+
+
+		}
+
+		private HttpClient GetHttpClient()
+		{
+			var handler = GetHttpClientHandler();
+			return new HttpClient(GetHttpClientHandler());
+		}
+
+		private HttpClientHandler GetHttpClientHandler()
+		{
+			var handler = new HttpClientHandler();
 
 			if (ProxyServerUri != null)
 			{
-				request.Proxy = new WebProxy(ProxyServerUri, false);
-			}
-			
-			if (description.Headers.Count > 0)
-			{
-				foreach (string key in description.Headers.AllKeys)
-				{
-					request.Headers[key] = description.Headers[key];
-				}
+				handler.Proxy = new WebProxy(ProxyServerUri, false);
 			}
 
-			if (!string.IsNullOrEmpty(description.Body))
-			{
-				request.ContentType = description.ContentType;
-
-				using (var writer = new StreamWriter(request.GetRequestStream()))
-				{
-					writer.Write(description.Body);
-				}
-			}
-			else if (description.RawBody != null && description.RawBody.Length > 0)
-			{
-				request.ContentType = description.ContentType;
-
-				using (var writer = new BinaryWriter(request.GetRequestStream()))
-				{
-					writer.Write(description.RawBody);
-				}
-			}
-
-			return request;
+			return handler;
 		}
 
 		public override string ToString()
 		{
 			if (string.IsNullOrEmpty(ResponseBody))
 			{
-				ResponseBody = ToWebResponse().ReadToEnd();
+				using (var response = ToWebResponse())
+				{
+					using (var streamReader = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+					{
+						ResponseBody = streamReader.ReadToEndAsync().Result;
+					}
+				}
 			}
 
 			return ResponseBody;

@@ -51,7 +51,7 @@ namespace DevDefined.OAuth.Tests.Framework
 			List<QueryParameter> parameters =
 				UriUtility.GetHeaderParameters("realm=\"http:\\somerealm.com\", oauth_consumer_key=\"\"");
 
-			Assert.Equal(0, parameters.Count);
+			Assert.Empty(parameters);
 		}
 
 		[Fact]
@@ -95,7 +95,7 @@ namespace DevDefined.OAuth.Tests.Framework
 		[Fact]
 		public void NormalizeRequestParameters_ReturnsParametersInOrdinalOrder()
 		{
-			var parameters = new Dictionary<string, string> {{"ZIP", "123"}, {"CVV", "123"}, {"ccid", "123"}};
+			var parameters = new Dictionary<string, string> { { "ZIP", "123" }, { "CVV", "123" }, { "ccid", "123" } };
 
 			Assert.Equal("CVV=123&ZIP=123&ccid=123", UriUtility.NormalizeRequestParameters(parameters));
 		}

@@ -37,19 +37,19 @@ namespace DevDefined.OAuth.Tests.Utility
 		[Fact]
 		public void EqualsInConstantTime_ComparesInConstantTimeRegardlessOfPercentMatch_ToWithinMarginOfError()
 		{
-			const int length = 10*1024; // 10K characters - big enough to avoid wild fluctuations in timing
+			const int length = 10 * 1024; // 10K characters - big enough to avoid wild fluctuations in timing
 
 			const int numberOfTimestoCompare = 10000;
 
 			string value = GenerateTestString(1.0, length);
 
 			long[] rangesOfTime = Enumerable.Range(0, 100)
-				.Select(range => GenerateTestString((range/100.0), length)).ToArray()
+				.Select(range => GenerateTestString((range / 100.0), length)).ToArray()
 				.Select(other => TimeCompareValuesOverIterationsConstantTime(value, other, numberOfTimestoCompare))
 				.ToArray();
 
 			long[] stringEqualsRangesOfTime = Enumerable.Range(0, 100)
-				.Select(range => GenerateTestString((range/100.0), length)).ToArray()
+				.Select(range => GenerateTestString((range / 100.0), length)).ToArray()
 				.Select(other => TimeCompareValuesOverIterationsStringEquals(value, other, numberOfTimestoCompare))
 				.ToArray();
 
@@ -92,7 +92,7 @@ namespace DevDefined.OAuth.Tests.Utility
 
 		static string GenerateTestString(double percentMatch, int length)
 		{
-			var matchLength = (int) (percentMatch*length);
+			var matchLength = (int)(percentMatch * length);
 			int nonMatchLength = length - matchLength;
 
 			if (nonMatchLength == 0) return new string('X', length);
@@ -106,7 +106,7 @@ namespace DevDefined.OAuth.Tests.Utility
 
 			long minTime = rangesOfTime.Min();
 
-			return 1.0m - ((1.0m/maxTime)*minTime);
+			return 1.0m - ((1.0m / maxTime) * minTime);
 		}
 
 		public long TimeCompareValuesOverIterationsConstantTime(string value, string other, int iterations)

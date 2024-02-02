@@ -26,6 +26,7 @@
 
 using DevDefined.OAuth.Framework;
 using DevDefined.OAuth.Provider.Inspectors;
+using DevDefined.OAuth.Tests.Utility;
 using Xunit;
 
 namespace DevDefined.OAuth.Tests.Provider.Inspectors
@@ -39,24 +40,23 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 		public void inspect_body_for_plainttext_signature_does_nothing()
 		{
 			var context = new OAuthContext
-			              	{
-			              		UseAuthorizationHeader = true,
-			              		BodyHash = "wrong",
-			              		SignatureMethod = SignatureMethod.PlainText
-			              	};
-
-			Assert.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
+			{
+				UseAuthorizationHeader = true,
+				BodyHash = "wrong",
+				SignatureMethod = SignatureMethod.PlainText
+			};
+			AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
 		}
 
 		[Fact]
 		public void inspect_body_for_hmac_sha1_signature_throws_when_hash_does_not_match()
 		{
 			var context = new OAuthContext
-			              	{
-			              		UseAuthorizationHeader = true,
-			              		BodyHash = "wrong",
-			              		SignatureMethod = SignatureMethod.HmacSha1
-			              	};
+			{
+				UseAuthorizationHeader = true,
+				BodyHash = "wrong",
+				SignatureMethod = SignatureMethod.HmacSha1
+			};
 
 			var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
 
@@ -67,37 +67,37 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 		public void inspect_body_for_hmac_sha1_signature_does_not_throw_when_hash_matches()
 		{
 			var context = new OAuthContext
-			              	{
-			              		UseAuthorizationHeader = true,
-			              		BodyHash = EmptyBodyHash,
-			              		SignatureMethod = SignatureMethod.HmacSha1
-			              	};
+			{
+				UseAuthorizationHeader = true,
+				BodyHash = EmptyBodyHash,
+				SignatureMethod = SignatureMethod.HmacSha1
+			};
 
-			Assert.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
+			AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
 		}
 
 		[Fact]
 		public void inspect_body_for_hmac_sha1_signature_does_not_throw_when_body_hash_is_null()
 		{
 			var context = new OAuthContext
-			              	{
-			              		UseAuthorizationHeader = true,
-			              		BodyHash = null,
-			              		SignatureMethod = SignatureMethod.HmacSha1
-			              	};
+			{
+				UseAuthorizationHeader = true,
+				BodyHash = null,
+				SignatureMethod = SignatureMethod.HmacSha1
+			};
 
-			Assert.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
+			AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
 		}
 
 		[Fact]
 		public void inspect_when_context_has_form_parameters_throws()
 		{
 			var context = new OAuthContext
-			              	{
-			              		UseAuthorizationHeader = false,
-			              		BodyHash = "1234",
-			              		SignatureMethod = SignatureMethod.HmacSha1
-			              	};
+			{
+				UseAuthorizationHeader = false,
+				BodyHash = "1234",
+				SignatureMethod = SignatureMethod.HmacSha1
+			};
 
 			var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
 

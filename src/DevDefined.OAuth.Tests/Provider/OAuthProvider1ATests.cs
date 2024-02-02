@@ -45,26 +45,26 @@ namespace DevDefined.OAuth.Tests.Provider
 			var nonceStore = new TestNonceStore();
 
 			provider = new OAuthProvider(tokenStore,
-			                             new SignatureValidationInspector(consumerStore),
-			                             new NonceStoreInspector(nonceStore),
-			                             new TimestampRangeInspector(new TimeSpan(1, 0, 0)),
-			                             new ConsumerValidationInspector(consumerStore),
-			                             new OAuth10AInspector(tokenStore));
+										 new SignatureValidationInspector(consumerStore),
+										 new NonceStoreInspector(nonceStore),
+										 new TimestampRangeInspector(new TimeSpan(1, 0, 0)),
+										 new ConsumerValidationInspector(consumerStore),
+										 new OAuth10AInspector(tokenStore));
 		}
 
 		static IOAuthSession CreateConsumer(string signatureMethod)
 		{
 			var consumerContext = new OAuthConsumerContext
-			                      	{
-			                      		SignatureMethod = signatureMethod,
-			                      		ConsumerKey = "key",
-			                      		ConsumerSecret = "secret",
-			                      		Key = TestCertificates.OAuthTestCertificate().PrivateKey
-			                      	};
+			{
+				SignatureMethod = signatureMethod,
+				ConsumerKey = "key",
+				ConsumerSecret = "secret",
+				Key = TestCertificates.OAuthTestCertificate().PrivateKey
+			};
 
 			var session = new OAuthSession(consumerContext, "http://localhost/oauth/requesttoken.rails",
-			                               "http://localhost/oauth/userauhtorize.rails",
-			                               "http://localhost/oauth/accesstoken.rails");
+										   "http://localhost/oauth/userauhtorize.rails",
+										   "http://localhost/oauth/accesstoken.rails");
 
 			return session;
 		}
@@ -74,7 +74,7 @@ namespace DevDefined.OAuth.Tests.Provider
 		{
 			IOAuthSession session = CreateConsumer(SignatureMethod.RsaSha1);
 			IOAuthContext context = session.BuildExchangeRequestTokenForAccessTokenContext(
-				new TokenBase {ConsumerKey = "key", Token = "requestkey"}, "GET", "GzvVb5WjWfHKa/0JuFupaMyn").Context;
+				new TokenBase { ConsumerKey = "key", Token = "requestkey" }, "GET", "GzvVb5WjWfHKa/0JuFupaMyn").Context;
 			provider.ExchangeRequestTokenForAccessToken(context);
 		}
 
@@ -85,7 +85,7 @@ namespace DevDefined.OAuth.Tests.Provider
 
 			IOAuthSession session = CreateConsumer(SignatureMethod.RsaSha1);
 			IOAuthContext context = session.BuildExchangeRequestTokenForAccessTokenContext(
-				new TokenBase {ConsumerKey = "key", Token = "requestkey"}, "GET", verifier).Context;
+				new TokenBase { ConsumerKey = "key", Token = "requestkey" }, "GET", verifier).Context;
 			var ex = Assert.Throws<OAuthException>(() => provider.ExchangeRequestTokenForAccessToken(context));
 			Assert.Equal("Missing required parameter : oauth_verifier", ex.Message);
 		}
@@ -95,7 +95,7 @@ namespace DevDefined.OAuth.Tests.Provider
 		{
 			IOAuthSession session = CreateConsumer(SignatureMethod.RsaSha1);
 			IOAuthContext context = session.BuildExchangeRequestTokenForAccessTokenContext(
-				new TokenBase {ConsumerKey = "key", Token = "requestkey"}, "GET", "wrong").Context;
+				new TokenBase { ConsumerKey = "key", Token = "requestkey" }, "GET", "wrong").Context;
 			var ex = Assert.Throws<OAuthException>(() => provider.ExchangeRequestTokenForAccessToken(context));
 			Assert.Equal("The parameter \"oauth_verifier\" was rejected", ex.Message);
 		}

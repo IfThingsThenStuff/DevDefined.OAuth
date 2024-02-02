@@ -33,8 +33,8 @@ using Xunit;
 
 namespace DevDefined.OAuth.Tests.Provider.Inspectors
 {
-	public class NonceStoreInspectorTests
-	{
+    public class NonceStoreInspectorTests
+    {
         [Fact]
         public void InspectContextForRepeatedNonceThrows()
         {
@@ -52,21 +52,21 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
         }
 
 
-		[Fact]
-		public void InspectContextForUniqueNoncePasses()
-		{
+        [Fact]
+        public void InspectContextForUniqueNoncePasses()
+        {
             var nonceStore = new Mock<INonceStore>();
 
-            var context = new OAuthContext {Nonce = "2"};
+            var context = new OAuthContext { Nonce = "2" };
 
             nonceStore.Setup(stub => stub.RecordNonceAndCheckIsUnique(context, "2")).Returns(true);
 
-			var inspector = new NonceStoreInspector(nonceStore.Object);
+            var inspector = new NonceStoreInspector(nonceStore.Object);
 
-			AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
+            AssertionExtensions.DoesNotThrow(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
 
             var ex = Record.Exception(() => inspector.InspectContext(ProviderPhase.AccessProtectedResourceRequest, context));
             Assert.Null(ex);
         }
-	}
+    }
 }

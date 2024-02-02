@@ -32,23 +32,23 @@ using Xunit;
 
 namespace DevDefined.OAuth.Tests.Provider.Inspectors
 {
-	public class ConsumerValidationInspectorTests
-	{
-		[Fact]
-		public void InValidConsumerThrows()
-		{
-			var consumerStore = new Mock<IConsumerStore>();
+    public class ConsumerValidationInspectorTests
+    {
+        [Fact]
+        public void InValidConsumerThrows()
+        {
+            var consumerStore = new Mock<IConsumerStore>();
 
-			var context = new OAuthContext {ConsumerKey = "key"};
+            var context = new OAuthContext { ConsumerKey = "key" };
 
-			consumerStore.Setup(stub => stub.IsConsumer(context)).Returns(false);
+            consumerStore.Setup(stub => stub.IsConsumer(context)).Returns(false);
 
-			var inspector = new ConsumerValidationInspector(consumerStore.Object);
+            var inspector = new ConsumerValidationInspector(consumerStore.Object);
 
-			var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
+            var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
 
-			Assert.Equal("Unknown Consumer (Realm: , Key: key)", ex.Message);
-		}
+            Assert.Equal("Unknown Consumer (Realm: , Key: key)", ex.Message);
+        }
 
         [Fact]
         public void ValidConsumerPassesThrough()

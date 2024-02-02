@@ -34,8 +34,8 @@ using Xunit;
 
 namespace DevDefined.OAuth.Tests.Provider.Inspectors
 {
-	public class SignatureValidationInspectorTests
-	{
+    public class SignatureValidationInspectorTests
+    {
 
         [Fact]
         public void InvalidSignatureThrows()

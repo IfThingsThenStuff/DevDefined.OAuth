@@ -37,12 +37,12 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 		public void OutsideAfterRange()
 		{
 			var inspector = new TimestampRangeInspector(new TimeSpan(0, 0, 0), new TimeSpan(1, 0, 0),
-			                                            () => new DateTime(2008, 1, 1, 12, 0, 0));
+														() => new DateTime(2008, 1, 1, 12, 0, 0));
 
 			var context = new OAuthContext
-			              	{
-			              		Timestamp = new DateTime(2008, 1, 1, 13, 0, 1).Epoch().ToString()
-			              	};
+			{
+				Timestamp = new DateTime(2008, 1, 1, 13, 0, 1).Epoch().ToString()
+			};
 
 			var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
 
@@ -53,12 +53,12 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 		public void OutsideBeforeRange()
 		{
 			var inspector = new TimestampRangeInspector(new TimeSpan(1, 0, 0), new TimeSpan(0, 0, 0),
-			                                            () => new DateTime(2008, 1, 1, 12, 0, 0));
+														() => new DateTime(2008, 1, 1, 12, 0, 0));
 
 			var context = new OAuthContext
-			              	{
-			              		Timestamp = new DateTime(2008, 1, 1, 10, 59, 59).Epoch().ToString()
-			              	};
+			{
+				Timestamp = new DateTime(2008, 1, 1, 10, 59, 59).Epoch().ToString()
+			};
 
 			var ex = Assert.Throws<OAuthException>(() => inspector.InspectContext(ProviderPhase.GrantRequestToken, context));
 
@@ -69,12 +69,12 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 		public void WithAfterRange()
 		{
 			var inspector = new TimestampRangeInspector(new TimeSpan(0, 0, 0), new TimeSpan(1, 0, 0),
-			                                            () => new DateTime(2008, 1, 1, 12, 0, 0));
+														() => new DateTime(2008, 1, 1, 12, 0, 0));
 
 			var context = new OAuthContext
-			              	{
-			              		Timestamp = new DateTime(2008, 1, 1, 13, 0, 0).Epoch().ToString()
-			              	};
+			{
+				Timestamp = new DateTime(2008, 1, 1, 13, 0, 0).Epoch().ToString()
+			};
 
 			inspector.InspectContext(ProviderPhase.GrantRequestToken, context);
 		}
@@ -83,12 +83,12 @@ namespace DevDefined.OAuth.Tests.Provider.Inspectors
 		public void WithinBeforeRange()
 		{
 			var inspector = new TimestampRangeInspector(new TimeSpan(1, 0, 0), new TimeSpan(0, 0, 0),
-			                                            () => new DateTime(2008, 1, 1, 12, 0, 0));
+														() => new DateTime(2008, 1, 1, 12, 0, 0));
 
 			var context = new OAuthContext
-			              	{
-			              		Timestamp = new DateTime(2008, 1, 1, 11, 0, 0).Epoch().ToString()
-			              	};
+			{
+				Timestamp = new DateTime(2008, 1, 1, 11, 0, 0).Epoch().ToString()
+			};
 
 			inspector.InspectContext(ProviderPhase.GrantRequestToken, context);
 		}

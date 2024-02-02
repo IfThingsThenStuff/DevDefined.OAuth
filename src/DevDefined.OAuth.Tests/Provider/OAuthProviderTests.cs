@@ -45,45 +45,45 @@ namespace DevDefined.OAuth.Tests.Provider
 			var nonceStore = new TestNonceStore();
 
 			provider = new OAuthProvider(tokenStore,
-			                             new SignatureValidationInspector(consumerStore),
-			                             new NonceStoreInspector(nonceStore),
-			                             new TimestampRangeInspector(new TimeSpan(1, 0, 0)),
-			                             new ConsumerValidationInspector(consumerStore),
-                                   new XAuthValidationInspector(ValidateXAuthMode, AuthenticateXAuthUsernameAndPassword));
+										 new SignatureValidationInspector(consumerStore),
+										 new NonceStoreInspector(nonceStore),
+										 new TimestampRangeInspector(new TimeSpan(1, 0, 0)),
+										 new ConsumerValidationInspector(consumerStore),
+								   new XAuthValidationInspector(ValidateXAuthMode, AuthenticateXAuthUsernameAndPassword));
 		}
 
 		static IOAuthSession CreateConsumer(string signatureMethod)
 		{
 			var consumerContext = new OAuthConsumerContext
-			                      	{
-			                      		SignatureMethod = signatureMethod,
-			                      		ConsumerKey = "key",
-			                      		ConsumerSecret = "secret",
-			                      		Key = TestCertificates.OAuthTestCertificate().PrivateKey
-			                      	};
+			{
+				SignatureMethod = signatureMethod,
+				ConsumerKey = "key",
+				ConsumerSecret = "secret",
+				Key = TestCertificates.OAuthTestCertificate().PrivateKey
+			};
 
 			var session = new OAuthSession(consumerContext, "http://localhost/oauth/requesttoken.rails",
-			                               "http://localhost/oauth/userauhtorize.rails",
-			                               "http://localhost/oauth/accesstoken.rails");
+										   "http://localhost/oauth/userauhtorize.rails",
+										   "http://localhost/oauth/accesstoken.rails");
 
 			return session;
 		}
 
-    public bool ValidateXAuthMode(string authMode)
-    {
-      return authMode == "client_auth";
-    }
+		public bool ValidateXAuthMode(string authMode)
+		{
+			return authMode == "client_auth";
+		}
 
-    public bool AuthenticateXAuthUsernameAndPassword(string username, string password)
-    {
-      return username == "username" && password == "password";
-    }
+		public bool AuthenticateXAuthUsernameAndPassword(string username, string password)
+		{
+			return username == "username" && password == "password";
+		}
 
 		[Fact]
 		public void AccessProtectedResource()
 		{
 			IOAuthSession session = CreateConsumer(SignatureMethod.RsaSha1);
-			session.AccessToken = new TokenBase {ConsumerKey = "key", Token = "accesskey", TokenSecret = "accesssecret"};
+			session.AccessToken = new TokenBase { ConsumerKey = "key", Token = "accesskey", TokenSecret = "accesssecret" };
 			IOAuthContext context = session.Request().Get().ForUrl("http://localhost/protected.rails").SignWithToken().Context;
 			context.TokenSecret = null;
 			provider.AccessProtectedResourceRequest(context);
@@ -93,7 +93,7 @@ namespace DevDefined.OAuth.Tests.Provider
 		public void AccessProtectedResourceWithPlainText()
 		{
 			IOAuthSession session = CreateConsumer(SignatureMethod.PlainText);
-			session.AccessToken = new TokenBase {ConsumerKey = "key", Token = "accesskey", TokenSecret = "accesssecret"};
+			session.AccessToken = new TokenBase { ConsumerKey = "key", Token = "accesskey", TokenSecret = "accesssecret" };
 			IOAuthContext context = session.Request().Get().ForUrl("http://localhost/protected.rails").SignWithToken().Context;
 			context.TokenSecret = null;
 			provider.AccessProtectedResourceRequest(context);
@@ -105,7 +105,7 @@ namespace DevDefined.OAuth.Tests.Provider
 			IOAuthSession session = CreateConsumer(SignatureMethod.RsaSha1);
 			IOAuthContext context =
 				session.BuildExchangeRequestTokenForAccessTokenContext(
-					new TokenBase {ConsumerKey = "key", Token = "requestkey", TokenSecret = "requestsecret"}, "GET", null).Context;
+					new TokenBase { ConsumerKey = "key", Token = "requestkey", TokenSecret = "requestsecret" }, "GET", null).Context;
 			context.TokenSecret = null;
 			IToken accessToken = provider.ExchangeRequestTokenForAccessToken(context);
 			Assert.Equal("accesskey", accessToken.Token);
@@ -118,7 +118,7 @@ namespace DevDefined.OAuth.Tests.Provider
 			IOAuthSession session = CreateConsumer(SignatureMethod.PlainText);
 			IOAuthContext context =
 				session.BuildExchangeRequestTokenForAccessTokenContext(
-					new TokenBase {ConsumerKey = "key", Token = "requestkey", TokenSecret = "requestsecret"}, "GET", null).Context;
+					new TokenBase { ConsumerKey = "key", Token = "requestkey", TokenSecret = "requestsecret" }, "GET", null).Context;
 			context.TokenSecret = null;
 			IToken accessToken = provider.ExchangeRequestTokenForAccessToken(context);
 			Assert.Equal("accesskey", accessToken.Token);
@@ -130,7 +130,7 @@ namespace DevDefined.OAuth.Tests.Provider
 		{
 			IOAuthSession session = CreateConsumer(SignatureMethod.RsaSha1);
 			IOAuthContext context = session.BuildExchangeRequestTokenForAccessTokenContext(
-				new TokenBase {ConsumerKey = "key", Token = "requestkey"}, "GET", "GzvVb5WjWfHKa/0JuFupaMyn").Context;
+				new TokenBase { ConsumerKey = "key", Token = "requestkey" }, "GET", "GzvVb5WjWfHKa/0JuFupaMyn").Context;
 			provider.ExchangeRequestTokenForAccessToken(context);
 		}
 
@@ -198,20 +198,20 @@ namespace DevDefined.OAuth.Tests.Provider
 		[Fact]
 		public void RequestTokenWithTokenSecretParamterThrowsException()
 		{
-			IOAuthContext context = new OAuthContext {TokenSecret = "secret"};
+			IOAuthContext context = new OAuthContext { TokenSecret = "secret" };
 			var ex = Assert.Throws<OAuthException>(() => provider.ExchangeRequestTokenForAccessToken(context));
 			Assert.Equal("The oauth_token_secret must not be transmitted to the provider.", ex.Message);
 		}
 
-    [Fact]
-    public void AccessTokenWithHmacSha1()
-    {
-      IOAuthSession session = CreateConsumer(SignatureMethod.HmacSha1);
-      IOAuthContext context = session.BuildAccessTokenContext("GET", "client_auth", "username", "password").Context;
-      context.TokenSecret = null;
-      IToken accessToken = provider.CreateAccessToken(context);
-      Assert.Equal("accesskey", accessToken.Token);
-      Assert.Equal("accesssecret", accessToken.TokenSecret);
-    }
-  }
+		[Fact]
+		public void AccessTokenWithHmacSha1()
+		{
+			IOAuthSession session = CreateConsumer(SignatureMethod.HmacSha1);
+			IOAuthContext context = session.BuildAccessTokenContext("GET", "client_auth", "username", "password").Context;
+			context.TokenSecret = null;
+			IToken accessToken = provider.CreateAccessToken(context);
+			Assert.Equal("accesskey", accessToken.Token);
+			Assert.Equal("accesssecret", accessToken.TokenSecret);
+		}
+	}
 }

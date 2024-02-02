@@ -33,7 +33,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
 using DevDefined.OAuth.Framework;
-using DevDefined.OAuth.Utility;
 
 namespace DevDefined.OAuth.Consumer
 {
@@ -42,17 +41,17 @@ namespace DevDefined.OAuth.Consumer
 		readonly IOAuthConsumerContext _consumerContext;
 		readonly IOAuthContext _context;
 		readonly IToken _token;
-        private readonly HttpClient _httpClient;
+		private readonly HttpClient _httpClient;
 
-        public ConsumerRequest(IOAuthContext context, IOAuthConsumerContext consumerContext, IToken token)
+		public ConsumerRequest(IOAuthContext context, IOAuthConsumerContext consumerContext, IToken token)
 		{
 			if (context == null) throw new ArgumentNullException("context");
 			if (consumerContext == null) throw new ArgumentNullException("consumerContext");
 			_context = context;
 			_consumerContext = consumerContext;
 			_token = token;
-            _httpClient = new HttpClient();
-        }
+			_httpClient = new HttpClient();
+		}
 
 		string ResponseBody { get; set; }
 
@@ -93,10 +92,10 @@ namespace DevDefined.OAuth.Consumer
 			Uri uri = _context.GenerateUri();
 
 			var description = new RequestDescription
-			                  	{
-			                  		Url = uri,
-			                  		Method = _context.RequestMethod,
-			                  	};
+			{
+				Url = uri,
+				Method = _context.RequestMethod,
+			};
 
 			if ((_context.FormEncodedParameters != null) && (_context.FormEncodedParameters.Count > 0))
 			{
@@ -129,34 +128,34 @@ namespace DevDefined.OAuth.Consumer
 
 		public HttpResponseMessage ToWebResponse()
 		{
-            return ToWebResponseAsync().Result;
-        }
+			return ToWebResponseAsync().Result;
+		}
 
-        public async Task<HttpResponseMessage> ToWebResponseAsync()
-        {
-            try
-            {
-                HttpRequestMessage request = ToWebRequest();
-                using (var httpClient = new HttpClient())
-                {
-                    return await httpClient.SendAsync(request);
-                }
-            }
-            catch (WebException httpEx)
-            {
-                OAuthException authException;
+		public async Task<HttpResponseMessage> ToWebResponseAsync()
+		{
+			try
+			{
+				HttpRequestMessage request = ToWebRequest();
+				using (var httpClient = new HttpClient())
+				{
+					return await httpClient.SendAsync(request);
+				}
+			}
+			catch (WebException httpEx)
+			{
+				OAuthException authException;
 
-                if (WebExceptionHelper.TryWrapException(Context, httpEx, out authException, ResponseBodyAction))
-                {
-                    throw authException;
-                }
+				if (WebExceptionHelper.TryWrapException(Context, httpEx, out authException, ResponseBodyAction))
+				{
+					throw authException;
+				}
 
-                throw;
-            }
-        }
+				throw;
+			}
+		}
 
 
-        public NameValueCollection ToBodyParameters()
+		public NameValueCollection ToBodyParameters()
 		{
 			try
 			{
@@ -215,9 +214,9 @@ namespace DevDefined.OAuth.Consumer
 
 		public string RequestBody { get; set; }
 
-        public virtual HttpRequestMessage ToWebRequest()
-        {
-            RequestDescription description = GetRequestDescription();
+		public virtual HttpRequestMessage ToWebRequest()
+		{
+			RequestDescription description = GetRequestDescription();
 
 			using (var httpClient = GetHttpClient())
 			{
@@ -276,105 +275,40 @@ namespace DevDefined.OAuth.Consumer
 			}
 
 
-        }
+		}
 
-        private HttpClient GetHttpClient()
-        {
-			var handler = GetHttpClientHandler();
-            return new HttpClient(GetHttpClientHandler());
-        }
-
-        private HttpClientHandler GetHttpClientHandler()
-        {
-            var handler = new HttpClientHandler();
-
-            if (ProxyServerUri != null)
-            {
-                handler.Proxy = new WebProxy(ProxyServerUri, false);
-            }
-
-            return handler;
-        }
-
-
-        //public virtual HttpWebRequest ToWebRequest()
-        //{
-        //	RequestDescription description = GetRequestDescription();
-
-        //	var request = (HttpWebRequest) WebRequest.Create(description.Url);
-        //	request.Method = description.Method;
-        //	request.Headers["User-Agent"].ToString() = _consumerContext.Headers["User-Agent"].ToString();
-
-        //	if (Timeout.HasValue)
-        //		request.Timeout = Timeout.Value;
-
-        //	if (!string.IsNullOrEmpty(AcceptsType))
-        //	{
-        //		request.Accept = AcceptsType;
-        //	}
-
-        //	try
-        //	{
-        //		if (Context.Headers["If-Modified-Since"] != null)
-        //		{
-        //			string modifiedDateString = Context.Headers["If-Modified-Since"];
-        //			request.IfModifiedSince = DateTime.Parse(modifiedDateString);
-        //		}
-        //	}
-        //	catch (Exception ex)
-        //	{
-        //		throw new ApplicationException("If-Modified-Since header could not be parsed as a datetime", ex);
-        //	}
-
-        //	if (ProxyServerUri != null)
-        //	{
-        //		request.Proxy = new WebProxy(ProxyServerUri, false);
-        //	}
-
-        //	if (description.Headers.Count > 0)
-        //	{
-        //		foreach (string key in description.Headers.AllKeys)
-        //		{
-        //			request.Headers[key] = description.Headers[key];
-        //		}
-        //	}
-
-        //	if (!string.IsNullOrEmpty(description.Body))
-        //	{
-        //		request.ContentType = description.ContentType;
-
-        //		using (var writer = new StreamWriter(request.GetRequestStream()))
-        //		{
-        //			writer.Write(description.Body);
-        //		}
-        //	}
-        //	else if (description.RawBody != null && description.RawBody.Length > 0)
-        //	{
-        //		request.ContentType = description.ContentType;
-
-        //		using (var writer = new BinaryWriter(request.GetRequestStream()))
-        //		{
-        //			writer.Write(description.RawBody);
-        //		}
-        //	}
-
-        //	return request;
-        //}
-
-        public override string ToString()
+		private HttpClient GetHttpClient()
 		{
-            if (string.IsNullOrEmpty(ResponseBody))
-            {
-                using (var response = ToWebResponse())
-                {
-                    using (var streamReader = new StreamReader(response.Content.ReadAsStreamAsync().Result))
-                    {
-                        ResponseBody = streamReader.ReadToEndAsync().Result;
-                    }
-                }
-            }
+			var handler = GetHttpClientHandler();
+			return new HttpClient(GetHttpClientHandler());
+		}
 
-            return ResponseBody;
+		private HttpClientHandler GetHttpClientHandler()
+		{
+			var handler = new HttpClientHandler();
+
+			if (ProxyServerUri != null)
+			{
+				handler.Proxy = new WebProxy(ProxyServerUri, false);
+			}
+
+			return handler;
+		}
+
+		public override string ToString()
+		{
+			if (string.IsNullOrEmpty(ResponseBody))
+			{
+				using (var response = ToWebResponse())
+				{
+					using (var streamReader = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+					{
+						ResponseBody = streamReader.ReadToEndAsync().Result;
+					}
+				}
+			}
+
+			return ResponseBody;
 		}
 
 		void EnsureRequestHasNotBeenSignedYet()
